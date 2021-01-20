@@ -17,8 +17,11 @@ def Login(request):
         user=authenticate(request,username=request.POST.get('username'),password=request.POST.get('password'))
         if user is not None:
             login(request,user)
-            logger.info("starting thread")
-            start_new_thread(socketthread, (user,))
+            try:
+                user_exists = UserProfile.objects.get(pk=user)
+            except UserProfile.DoesNotExist:
+                profile = UserProfile(user = user)
+                profile.save()
             return HttpResponse("Logged in")
         else:
             return HttpResponse("Error Logging In")
@@ -32,10 +35,17 @@ def Logout(request):
 
 def Register(request):
     if request.method == 'POST':
-        user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
+        user = User.objects.create_user(request.POST.get('username'), request.POST.get('email'), request.POST.get('password'))
         user.save()
         profile = UserProfile(user = user)
         profile.save()
-        return HttpResponse("Registered!")
+        return HttpResponse("Registered")
     else:
         return HttpResponse("Error Registering")
+
+def Connect(request):
+    if request.method == 'POST':
+        start_new_thread(socketthread, (request.user,))
+        return HttpResponse("Connected")
+    else:
+        return HttpResponse("Error Connecting")
