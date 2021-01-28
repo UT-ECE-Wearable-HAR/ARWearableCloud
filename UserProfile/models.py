@@ -7,4 +7,5 @@ class UserProfile(models.Model):
 
 class ImgCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+	date = models.DateTimeField(auto_now_add=True, blank=True)
 	img = models.BinaryField()
