@@ -5,11 +5,12 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
 	user = models.OneToOneField(User, on_delete = models.CASCADE, primary_key = True)
 
-
 class ImgCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+	date = models.DateTimeField(auto_now_add=True, blank=True)
 	img = models.BinaryField()
 
 class MpuCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+	date = models.DateTimeField(auto_now_add=True, blank=True)
 	mpu_data = models.BinaryField()

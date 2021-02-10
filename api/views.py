@@ -35,6 +35,10 @@ def Logout(request):
 
 def Register(request):
     if request.method == 'POST':
+        if User.objects.filter(username=request.POST.get('username')).exists():
+            return HttpResponse("Username already in use")
+        if User.objects.filter(email=request.POST.get('email')).exists():
+            return HttpResponse("Email already in use")
         user = User.objects.create_user(request.POST.get('username'), request.POST.get('email'), request.POST.get('password'))
         user.save()
         profile = UserProfile(user = user)
