@@ -9,3 +9,7 @@ class UserProfile(models.Model):
 class ImgCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 	img = models.BinaryField()
+
+class MpuCapture(models.Model):
+	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+	mpu_data = models.BinaryField()

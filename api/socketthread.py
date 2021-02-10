@@ -2,7 +2,7 @@ import socket
 from _thread import *
 import threading
 import logging
-from UserProfile.models import UserProfile, ImgCapture 
+from UserProfile.models import UserProfile, ImgCapture, MpuCapture 
 
 HOST = "localhost"
 PORT = 4444
@@ -36,4 +36,14 @@ def socketthread(user):
         img = ImgCapture(user=userprofile, img = res[4:])
         img.save()
         logger.info("Image saved")
+        logger.info("Receiving MPU data")
+        res = bytearray()
+        while(len(res) < 42):
+            buf = c.recv(1024)
+            res += buf
+        mpubytes = res[:42]
+        c.send("MPU_RECV\n".encode())
+        mpu_data = MpuCapture(user= userprofile, mpu_data=mpubytes)
+        mpu_data.save()
+        logger.info("MPU Data Recieved")
     c.close()
