@@ -6,12 +6,15 @@ from django.utils.timezone import now
 class UserProfile(models.Model):
 	user = models.OneToOneField(User, on_delete = models.CASCADE, primary_key = True)
 
-class ImgCapture(models.Model):
+class DataCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 	date = models.DateTimeField(blank=True, default=now)
 	img = models.BinaryField()
-
-class MpuCapture(models.Model):
-	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-	date = models.DateTimeField(blank=True, default=now)
-	mpu_data = models.BinaryField()
+	quarternion = models.BinaryField()
+	gravity = models.BinaryField()
+	ypr = models.BinaryField()
+	gyro = models.BinaryField()
+	accel = models.BinaryField()
+	linaccel = models.BinaryField()
+	linaccelinworld = models.BinaryField()
+	euler = models.BinaryField()
