@@ -132,9 +132,9 @@ def socketthread(user):
             c.send("MPU_RECV\n".encode())
             userprofile = UserProfile.objects.get(pk=user)
 
-            #logger.info("quart" + str(mpu_results['quart'].dtype) + "gravity" + str(mpu_results['gravity'].dtype) + 
+            """logger.info("quart" + str(mpu_results['quart'].dtype) + "gravity" + str(mpu_results['gravity'].dtype) + 
                 "ypr" + str(mpu_results['ypr'].dtype) + "gyro" + str(mpu_results['gyro'].dtype) + "accel" + str(mpu_results['accel'].dtype) + 
-                "linaccel" + str(mpu_results['linaccel'].dtype) + "law" + str(mpu_results['linaccelinworld'].dtype) + "euler" + str(mpu_results['euler'].dtype))
+                "linaccel" + str(mpu_results['linaccel'].dtype) + "law" + str(mpu_results['linaccelinworld'].dtype) + "euler" + str(mpu_results['euler'].dtype))"""
 
 
             data = DataCapture(user = userprofile, img = res[4:], quarternion = mpu_results['quart'], 
