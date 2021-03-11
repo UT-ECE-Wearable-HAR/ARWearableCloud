@@ -32,7 +32,7 @@ def mpu_extract_10(packet):
         entry = packet[:42]
         packet = packet[42:]
 
-        q = dmp.quaternion(packet)
+        q = dmp.quaternion(entry)
         result['qw'] = np.append(result['qw'], q[0])
         result['qx'] = np.append(result['qx'], q[1])
         result['qy'] = np.append(result['qy'], q[2])
@@ -43,13 +43,13 @@ def mpu_extract_10(packet):
         #logger.info(result['qz'])
         #logger.info(f"quaternion: w: {q.w}, x: {q.x}, y: {q.y}, z: {q.z}")
 
-        gravity = dmp.gravity(packet)
+        gravity = dmp.gravity(entry)
         result['gravx'] = np.append(result['gravx'], gravity[0])
         result['gravy'] = np.append(result['gravy'], gravity[1])
         result['gravz'] = np.append(result['gravz'], gravity[2])
         #logger.info(f"gravity: x: {gravity.x}, y: {gravity.y}, z: {gravity.z}")
 
-        ypr = dmp.yawPitchRoll(packet)
+        ypr = dmp.yawPitchRoll(entry)
         result['y'] = np.append(result['y'], ypr[0])
         result['p'] = np.append(result['p'], ypr[1])
         result['r'] = np.append(result['r'], ypr[2])
@@ -59,21 +59,21 @@ def mpu_extract_10(packet):
         #logger.info("ROLL: %3.1f" % (ypr.x * 180 / math.pi))
 
         
-        gyro = dmp.gyro(packet)
+        gyro = dmp.gyro(entry)
         result['gyrx'] = np.append(result['gyrx'], gyro[0])
         result['gyry'] = np.append(result['gyry'], gyro[1])
         result['gyrz'] = np.append(result['gyrz'], gyro[2])
         #logger.info(f"Gyro: x: {vec.x}, y: {vec.y}, z: {vec.z}")
 
 
-        accel = dmp.accel(packet)
+        accel = dmp.accel(entry)
         result['ax'] = np.append(result['ax'], accel[0])
         result['ay'] = np.append(result['ay'], accel[1])
         result['az'] = np.append(result['az'], accel[2])
         #logger.info(f"Accel: x: {accel.x}, y: {accel.y}, z: {accel.z}")
 
         # remmoves gravity component from accel
-        linAccel = dmp.linAccel(packet)
+        linAccel = dmp.linAccel(entry)
         result['linaccelx'] = np.append(result['linaccelx'], linAccel[0])
         result['linaccely'] = np.append(result['linaccely'], linAccel[1])
         result['linaccelz'] = np.append(result['linaccelz'], linAccel[2])
@@ -81,19 +81,18 @@ def mpu_extract_10(packet):
 
         # rotate measured 3D acceleration vector into original state
         # frame of reference based on orientation quaternion
-        linAccelWorld = dmp.linAccelWorld(packet)
+        linAccelWorld = dmp.linAccelWorld(entry)
         result['lawx'] = np.append(result['lawx'], linAccelWorld[0])
         result['lawy'] = np.append(result['lawy'], linAccelWorld[1])
         result['lawz'] = np.append(result['lawz'], linAccelWorld[2])
         #logger.info(f"LinearAccelInWorld: x: {vec.x}, y: {vec.y}, z: {vec.z}")
 
-        euler = dmp.euler(packet)
+        euler = dmp.euler(entry)
         result['ex'] = np.append(result['ex'], euler[0])
         result['ey'] = np.append(result['ey'], euler[1])
         result['ez'] = np.append(result['ez'], euler[2])
         # euler angles are in radians
         #logger.info(f"euler: psi: {euler.x}, theta: {euler.y}, phi: {euler.z}")
-        packet = packet[42:]
     return compress_mpudict(result)
 
 def socketthread(user):
