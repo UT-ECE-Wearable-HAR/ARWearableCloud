@@ -9,6 +9,7 @@ class UserProfile(models.Model):
 class DataCapture(models.Model):
 	user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 	date = models.DateTimeField(blank=True, default=now)
+	sessionid = models.IntegerField()
 	img = models.BinaryField()
 	quarternion = models.BinaryField()
 	gravity = models.BinaryField()

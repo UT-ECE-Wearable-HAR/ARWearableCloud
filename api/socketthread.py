@@ -8,6 +8,7 @@ import math
 import numpy as np
 from UserProfile.models import UserProfile, DataCapture
 import dmp
+import time
 
 HOST = "localhost"
 PORT = 4444
@@ -15,7 +16,7 @@ logger = logging.getLogger("mainlogger")
 
 
 ENTRIES = [
-    "quaternion", "gavity", "ypr", "gyro", "accel",
+    "quaternion", "gravity", "ypr", "gyro", "accel",
     "linAccel", "linAccelWold", "euler"
 ]
 
@@ -58,8 +59,7 @@ def socketthread(user):
     s.listen(5)
     c, addr = s.accept()
     logger.info(str(c) + " " + str(addr))
-
-    # TODO: This will need to be replaced with disconnecting logic
+    sessionid = int(time.time())
     try:
         while(1):
             logger.info("Receiving image")
@@ -84,9 +84,8 @@ def socketthread(user):
                 mpu_res += buf
             mpubytes = mpu_res[:420]
             c.send("MPU_RECV\n".encode())
-
             data = DataCapture(
-                user=userprofileUserProfile.objects.get(pk=user),
+                user=UserProfile.objects.get(pk=user), sessionid = sessionid,
                 img=res[4:], **extract_mpu_data(bytes(mpubytes))).save()
             logger.info("MPU Data Recieved")
         c.close()
