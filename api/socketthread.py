@@ -1,14 +1,23 @@
 """Websocket thread worker."""
 
 import socket
-from _thread import *
 import threading
 import logging
 import math
 import numpy as np
-from UserProfile.models import UserProfile, DataCapture
-import dmp
 import time
+
+from io import BytesIO
+from PIL import Image
+from PIL import ImageFile
+
+import dmp
+
+from _thread import *
+
+from UserProfile.models import UserProfile, DataCapture
+from .apps import ApiConfig
+
 
 HOST = "localhost"
 PORT = 4444
@@ -31,7 +40,7 @@ def extract_mpu_data(packet):
 
     Returns
     -------
-    dict[str] -> np.Array
+    dict[str] -> np.array
         Dict with accelerometer fields and numpy array data.
     """
     res = {k.lower(): [] for k in entries}
@@ -46,6 +55,23 @@ def extract_mpu_data(packet):
     return {k: np.stack(v).tobytes() for k, v in res.items()}
 
 
+def extract_features(buf):
+    """Extract MobileNet features.
+
+    Parameters
+    ----------
+    buf : bytes
+        Raw JPEG.
+
+    Returns
+    -------
+    np.array
+        Mobilenet features; dtype=float32, shape=(1280,)
+    """
+    img = np.array(Image.open(BytesIO(buf)).astype(np.float32) / 255.)
+    return ApiConfig.mobilenet(img)
+
+
 def socketthread(user):
     """Websocket processing thread.
 
@@ -54,7 +80,7 @@ def socketthread(user):
     user : ???
         ???
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('', PORT))
     s.listen(5)
     c, addr = s.accept()
@@ -85,8 +111,9 @@ def socketthread(user):
             mpubytes = mpu_res[:420]
             c.send("MPU_RECV\n".encode())
             data = DataCapture(
-                user=UserProfile.objects.get(pk=user), sessionid = sessionid,
-                img=res[4:], **extract_mpu_data(bytes(mpubytes))).save()
+                user=UserProfile.objects.get(pk=user), sessionid=sessionid,
+                img=res[4:], features=extract_features(res[4:]),
+                **extract_mpu_data(bytes(mpubytes))).save()
             logger.info("MPU Data Recieved")
         c.close()
     except ConnectionResetError:
