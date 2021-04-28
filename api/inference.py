@@ -43,6 +43,7 @@ def _majority_filter(y, ksize=60):
 
 def _list_segments(z, offset):
     """Extract segments from clusters."""
+
     changes = np.where(z[:-1] != z[1:])[0]
 
     segments = []
@@ -50,14 +51,18 @@ def _list_segments(z, offset):
     for end in changes:
         if end - start > 60:
             segments.append({
-                "start": start + offset,
-                "end": end + offset,
-                "id": z[end - 1]
+                "start": int(start + offset),
+                "end": int(end + offset),
+                "id": int(z[end - 1])
             })
             start = end + 1
 
-    segments.append(
-        {"start": start + offset, "end": len(z) + offset, "id": z[-1]})
+    segments.append({
+        "start": int(start + offset),
+        "end": int(len(z) + offset),
+        "id": int(z[-1])
+    })
+
     return segments
 
 
@@ -100,7 +105,7 @@ def _do_inference(request, user, session):
     return JsonResponse(results)
 
 
-def do_inference(request):
+def Inference(request):
     """Main inference view."""
     # Fetch data
     if request.method != 'POST':
