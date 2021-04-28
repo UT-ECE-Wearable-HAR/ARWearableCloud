@@ -1,13 +1,15 @@
 """Inference View."""
 
 from django.shortcuts import JsonResponse
+from django.db import models
 
+import json
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.decomposition import StandardScaler
 import bmcc
 
-from UserProfile.models import UserProfile, DataCapture
+from UserProfile.models import UserProfile, DataCapture, InferenceCache
 
 
 def _hybrid(*args, **kwargs):
@@ -39,7 +41,7 @@ def _majority_filter(y, ksize=60):
     return y_new
 
 
-def _list_segments(z):
+def _list_segments(z, offset):
     """Extract segments from clusters."""
     changes = np.where(z[:-1] != z[1:])[0]
 
@@ -48,28 +50,24 @@ def _list_segments(z):
     for end in changes:
         if end - start > 60:
             segments.append({
-                "start": start,
-                "end": end,
+                "start": start + offset,
+                "end": end + offset,
                 "id": z[end - 1]
             })
             start = end + 1
 
-    segments.append({"start": start, "end": len(z), "id": z[-1]})
+    segments.append(
+        {"start": start + offset, "end": len(z) + offset, "id": z[-1]})
     return segments
 
 
-def do_inference(request):
-    """Main inference view."""
-    if request.method != 'POST':
-        return JsonResponse{"error": "Request is not POST."}
-
-    # Fetch data
-    session = request.POST.get("session")
-    user = UserProfile.objects.get(pk=user)
-
+def _do_inference(request, user, session):
+    """Inner inference call."""
     data = DataCapture.objects.filter(user=user, sessionid=session)
     image_stack = np.stack([
         np.frombuffer(obj.img, dtype=np.float32) for obj in data])
+
+    start_index = data[0].id
 
     # Prepare features
     x = StandardScaler().fit_transform(
@@ -90,11 +88,30 @@ def do_inference(request):
 
     # Filter
     _, residuals = bmcc.pairwise_probability(model.hist, 10)
-    best = model.hist[np.argmin(residuals) + 10]
+    best = model.hist[np.argmin(residuals)]
 
     filtered = _majority_filter(best)
-    segments = _list_segments(filtered)
+    results = {"activities": _list_segments(filtered, data[0].id)}
 
-    return JsonResponse({
-        "activities": segments
-    })
+    # Cache
+    cached = InferenceCache(
+        user=user, sessionid=session, body=json.dumps(results)).save()
+
+    return JsonResponse(results)
+
+
+def do_inference(request):
+    """Main inference view."""
+    # Fetch data
+    if request.method != 'POST':
+        return JsonResponse{"error": "Request is not POST."}
+    session = request.POST.get("session")
+    user = UserProfile.objects.get(pk=request.user)
+
+    # Check cache
+    try:
+        cached = InferenceCache.objects.get(
+            user=request.user, sessionid=session)
+        return JsonResponse(cached.body)
+    except models.Model.DoesNotExist:
+        return _do_inference(request, user, session)
