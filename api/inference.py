@@ -1,12 +1,12 @@
 """Inference View."""
 
-from django.shortcuts import JsonResponse
+from django.http import JsonResponse
 from django.db import models
 
 import json
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.decomposition import StandardScaler
+from sklearn.preprocessing import StandardScaler
 import bmcc
 
 from UserProfile.models import UserProfile, DataCapture, InferenceCache
@@ -19,7 +19,7 @@ def _hybrid(*args, **kwargs):
     bmcc.split_merge(*args, **kwargs)
 
 
-def _model(x, asn, sampler=hybrid, alpha=0.1, annealing=None):
+def _model(x, asn, sampler=_hybrid, alpha=0.1, annealing=None):
     """Create clustering model."""
     return bmcc.BayesianMixture(
         data=x,
@@ -109,7 +109,7 @@ def Inference(request):
     """Main inference view."""
     # Fetch data
     if request.method != 'POST':
-        return JsonResponse{"error": "Request is not POST."}
+        return JsonResponse({"error": "Request is not POST."})
     session = request.POST.get("session")
     user = UserProfile.objects.get(pk=request.user)
 

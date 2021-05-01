@@ -8,5 +8,6 @@ urlpatterns = [
     path('logout/', Logout),
     path('register/', Register),
     path('connect/', Connect),
-    path('inference/', Inference)
+    path('inference/', Inference),
+    path('getimgs/', GetImgs)
 ]

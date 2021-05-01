@@ -53,3 +53,18 @@ def Connect(request):
         return HttpResponse("Connected")
     else:
         return HttpResponse("Error Connecting")
+
+def GetImgs(request):
+    if request.method == 'POST':
+        img_ids = request.POST.get('imgIds')
+        ret_json  = {}
+        ret_json['imgs'] = []
+        for img_id in img_ids:
+            try:
+                db_entry = DataCapture.objects.get(id=img_id)
+                ret_json['imgs'].append(getattr(db_entry, "img"))
+            except DataCapture.DoesNotExist:
+                ret_json['imgs'].append(0)
+        return JsonResponse(ret_json)
+
+
