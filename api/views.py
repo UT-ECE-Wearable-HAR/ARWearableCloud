@@ -1,4 +1,5 @@
 from django.shortcuts import render,HttpResponse
+from django.http import JsonResponse
 from django.contrib.auth import logout,login,authenticate
 from UserProfile.models import UserProfile 
 from django.core import serializers
@@ -64,9 +65,9 @@ def GetImgs(request):
         for img_id in img_ids:
             try:
                 db_entry = DataCapture.objects.get(id=img_id)
-                ret_json['imgs'].append(getattr(db_entry, "img"))
+                ret_json['imgs'].append(str(getattr(db_entry, "img")))
             except DataCapture.DoesNotExist:
-                ret_json['imgs'].append(0)
+                ret_json['imgs'].append("0")
         return JsonResponse(ret_json)
 
 
