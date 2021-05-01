@@ -7,6 +7,7 @@ from _thread import *
 from .socketthread import *
 import threading 
 import logging
+import json
 
 # Create your views here.
 
@@ -56,7 +57,8 @@ def Connect(request):
 
 def GetImgs(request):
     if request.method == 'POST':
-        img_ids = request.POST.get('imgIds')
+        body = json.loads(request.body)
+        img_ids = body['imgIds']
         ret_json  = {}
         ret_json['imgs'] = []
         for img_id in img_ids:

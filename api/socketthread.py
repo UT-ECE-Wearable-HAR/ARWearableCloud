@@ -25,8 +25,8 @@ logger = logging.getLogger("mainlogger")
 
 
 ENTRIES = [
-    "quaternion", "gravity", "ypr", "gyro", "accel",
-    "linAccel", "linAccelWold", "euler"
+    "quaternion", "gravity", "yawPitchRoll", "gyro", "accel",
+    "linAccel", "linAccelWorld", "euler"
 ]
 
 
@@ -43,7 +43,7 @@ def extract_mpu_data(packet):
     dict[str] -> np.array
         Dict with accelerometer fields and numpy array data.
     """
-    res = {k.lower(): [] for k in entries}
+    res = {k.lower(): [] for k in ENTRIES}
 
     while len(packet) > 0:
         entry = packet[:42]
@@ -52,7 +52,10 @@ def extract_mpu_data(packet):
         for entry in ENTRIES:
             res[entry.lower()].append(getattr(dmp, entry)(packet))
 
-    return {k: np.stack(v).tobytes() for k, v in res.items()}
+    to_ret = {k: np.stack(v).tobytes() for k, v in res.items()}
+    to_ret['ypr'] = to_ret.pop('yawpitchroll')
+    to_ret['linaccelinworld'] = to_ret.pop('linaccelworld')
+    return to_ret
 
 
 def extract_features(buf):
@@ -68,8 +71,8 @@ def extract_features(buf):
     np.array
         Mobilenet features; dtype=float32, shape=(1280,)
     """
-    img = np.array(Image.open(BytesIO(buf)).astype(np.float32) / 255.)
-    return ApiConfig.mobilenet(img)
+    img = np.array(Image.open(BytesIO(buf))).astype(np.float32) / 255
+    return ApiConfig.mobilenet(np.reshape(img[8:-8, 8:-8, :], [1, 224, 224, 3]))
 
 
 def socketthread(user):

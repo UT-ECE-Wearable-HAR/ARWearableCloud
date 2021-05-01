@@ -18,7 +18,7 @@ class DataCapture(models.Model):
     date = models.DateTimeField(blank=True, default=now)
     sessionid = models.IntegerField()
     img = models.BinaryField()
-    quarternion = models.BinaryField()
+    quaternion = models.BinaryField()
     gravity = models.BinaryField()
     ypr = models.BinaryField()
     gyro = models.BinaryField()
@@ -26,7 +26,7 @@ class DataCapture(models.Model):
     linaccel = models.BinaryField()
     linaccelinworld = models.BinaryField()
     euler = models.BinaryField()
-    features = models.BinaryField()
+    features = models.BinaryField(blank=True)
 
 
 class InferenceCache(models.Model):
