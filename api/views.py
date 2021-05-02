@@ -70,4 +70,20 @@ def GetImgs(request):
                 ret_json['imgs'].append("0")
         return JsonResponse(ret_json)
 
-
+def GetTimestamps(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        frame_ids = body['frameIds']
+        ret_json = {}
+        ret_json['timestamps'] = []
+        for frame in frame_ids:
+            try:
+                db_entry_start = DataCapture.objects.get(id=frame["start"])
+                db_entry_end = DataCapture.objects.get(id=frame["end"])
+                ts_summary = {}
+                ts_summary['start'] = getattr(db_entry_start, "date")
+                ts_summary['end'] = getattr(db_entry_end, "date")
+                ret_json['timestamps'].append(ts_summary)
+            except DataCapture.DoesNotExist:
+                ret_json['timestamps'].append({'start': -1, 'end': -1})
+        return JsonResponse(ret_json)

@@ -9,5 +9,6 @@ urlpatterns = [
     path('register/', Register),
     path('connect/', Connect),
     path('inference/', Inference),
-    path('getimgs/', GetImgs)
+    path('getimgs/', GetImgs),
+    path('gettimestamps/', GetTimestamps)
 ]
