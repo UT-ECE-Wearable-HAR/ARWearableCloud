@@ -9,6 +9,7 @@ from .socketthread import *
 import threading 
 import logging
 import json
+import base64
 
 # Create your views here.
 
@@ -65,7 +66,10 @@ def GetImgs(request):
         for img_id in img_ids:
             try:
                 db_entry = DataCapture.objects.get(id=img_id)
-                ret_json['imgs'].append(str(getattr(db_entry, "img")))
+                img = getattr(db_entry, "img")
+                encodedBytes = base64.b64encode(img)
+                encodedStr = str(encodedBytes, "utf-8")
+                ret_json['imgs'].append(encodedStr)
             except DataCapture.DoesNotExist:
                 ret_json['imgs'].append("0")
         return JsonResponse(ret_json)
